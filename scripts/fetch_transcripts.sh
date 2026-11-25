@@ -14,9 +14,14 @@ git pull --rebase --autostash --quiet origin main     # the scheduled job's data
 git add transcripts
 if git diff --cached --quiet -- transcripts; then
   echo "No new transcripts."
-  exit 0
+else
+  git commit --quiet -m "Add transcripts (from Mac)" -- transcripts
 fi
-git commit --quiet -m "Add transcripts (from Mac)" -- transcripts
-git pull --rebase --autostash --quiet origin main     # in case the scheduled job pushed meanwhile
-git push --quiet origin main
-echo "Pushed $(git show --stat --oneline HEAD | grep -c 'transcripts/') new transcript(s)."
+
+# Push whatever is waiting, including commits from an earlier run whose push failed
+# (overnight, while the Mac is locked, git can't read the GitHub login from the keychain).
+if [[ -n "$(git log --oneline origin/main..HEAD)" ]]; then
+  git pull --rebase --autostash --quiet origin main   # in case the scheduled job pushed meanwhile
+  git push --quiet origin main
+  echo "Pushed: $(git log --oneline -1 --format=%s)."
+fi
