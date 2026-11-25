@@ -30,3 +30,4 @@ Run `python update.py` after each game, or daily, to pick up new videos.
 - **Upload-time matching relies on the channel's routine.** A video uploaded unusually late, more than 16 hours after tip-off, won't be matched.
 - **Schedule changes need a rerun.** The schedule comes from Basketball-Reference's page, so postponed games update when you run `update.py` again.
 - **Some neutral-site games need a manual entry.** Basketball-Reference flags NBA Cup games, but not other neutral-site games, so add those to `location_overrides.csv`.
+# mitch-interviews
