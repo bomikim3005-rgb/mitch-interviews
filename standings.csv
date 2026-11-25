@@ -4,9 +4,9 @@ West,2,Los Angeles Lakers,15,3,.833,—,119.4,112.7
 West,3,Minnesota Timberwolves,13,5,.722,2.0,116.4,105.8
 West,4,Houston Rockets,13,5,.722,2.0,118.1,110.2
 West,5,Memphis Grizzlies,13,5,.722,2.0,120.3,111.4
-West,6,Denver Nuggets,10,5,.667,3.5,117.0,115.2
-West,7,Portland Trail Blazers,11,6,.647,3.5,116.8,110.4
-West,8,Dallas Mavericks,10,7,.588,4.5,112.4,112.5
+West,6,Portland Trail Blazers,11,6,.647,3.5,116.8,110.4
+West,7,Denver Nuggets,10,6,.625,4.0,116.0,115.5
+West,8,Dallas Mavericks,11,7,.611,4.0,112.8,111.8
 West,9,Phoenix Suns,9,7,.563,5.0,114.4,115.0
 West,10,Oklahoma City Thunder,10,8,.556,5.0,113.4,110.2
 West,11,Golden State Warriors,9,8,.529,5.5,111.2,112.1
@@ -15,14 +15,14 @@ West,13,Los Angeles Clippers,4,12,.250,10.0,110.7,117.5
 West,14,Utah Jazz,3,16,.158,12.5,107.8,115.4
 West,15,Sacramento Kings,2,15,.118,12.5,106.8,119.4
 East,1,Philadelphia 76ers,14,4,.778,—,115.3,113.4
-East,2,Boston Celtics,11,6,.647,2.5,111.2,102.1
+East,2,Boston Celtics,12,6,.667,2.0,112.3,102.9
 East,3,Atlanta Hawks,11,6,.647,2.5,116.7,113.6
 East,4,New York Knicks,11,6,.647,2.5,108.9,103.2
-East,5,Detroit Pistons,10,6,.625,3.0,113.4,108.6
+East,5,Detroit Pistons,11,6,.647,2.5,112.8,107.2
 East,6,Miami Heat,10,6,.625,3.0,120.7,119.4
 East,7,Cleveland Cavaliers,9,9,.500,5.0,118.2,116.8
-East,8,Orlando Magic,7,9,.438,6.0,108.8,112.9
-East,9,Washington Wizards,7,11,.389,7.0,110.3,115.4
+East,8,Orlando Magic,7,10,.412,6.5,107.4,112.4
+East,9,Washington Wizards,7,12,.368,7.5,110.6,116.2
 East,10,Toronto Raptors,6,11,.353,7.5,111.5,111.6
 East,11,Indiana Pacers,6,12,.333,8.0,112.4,115.7
 East,12,Chicago Bulls,5,12,.294,8.5,116.9,123.6
