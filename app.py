@@ -162,8 +162,38 @@ with st.sidebar:
     where = st.radio("Location", ["All", "Home", "Away"])
     opponent = st.text_input("Opponent contains", placeholder="e.g. Lakers")
 
-# ---- games table
 now = datetime.now(timezone.utc)
+
+# ---- next games
+NEXT_GAMES = 5
+
+
+def countdown(tip: datetime) -> str:
+    days = (tip.astimezone(S.PT).date() - now.astimezone(S.PT).date()).days
+    return {0: "Tonight", 1: "Tomorrow"}.get(days, f"In {days} days")
+
+
+upcoming = df[(df["kind"] != "No game") & (df["result"] == "") & df["tip"].notna()]
+upcoming = upcoming[upcoming["tip"].map(lambda t: t > now)].sort_values("tip").head(NEXT_GAMES)
+st.subheader("Next games")
+if upcoming.empty:
+    st.caption("No upcoming games scheduled.")
+else:
+    tips = upcoming["tip"].map(lambda t: t.astimezone(S.PT))
+    st.dataframe(
+        pd.DataFrame({
+            "When": upcoming["tip"].map(countdown),
+            "Date": tips.map(lambda t: t.strftime("%a, %b %-d")),
+            "Tip-off (PT)": tips.map(lambda t: t.strftime("%-I:%M %p")),
+            "Game": (upcoming["away"].map({True: "@ ", False: "vs "}) + upcoming["opp"]
+                     + upcoming["nba_cup"].map(lambda c: "  (NBA Cup)" if c else "")),
+            "Location": upcoming["location"],
+        }),
+        hide_index=True, width="stretch", height=38 + 35 * len(upcoming),
+    )
+
+# ---- games table
+st.subheader("All games and interviews")
 view = df[df["kind"].isin(kinds)]
 played = view["result"].ne("") | ((view["kind"] == "No game") & (view["when"] <= now))
 view = view[{"Played": played, "Upcoming": ~played, "All": played | ~played}[show]]
