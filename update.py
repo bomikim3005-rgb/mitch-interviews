@@ -240,9 +240,14 @@ def main():
     parser.add_argument("--season", type=int, default=S.current_season(date.today()))
     parser.add_argument("--full-scan", action="store_true",
                         help="list the whole channel with yt-dlp instead of the RSS feed")
+    parser.add_argument("--transcripts-only", action="store_true",
+                        help="only fetch missing transcripts (the Mac's daily job)")
     parser.add_argument("--skip-transcripts", action="store_true",
                         help="don't fetch captions for the word cloud this run")
     args = parser.parse_args()
+    if args.transcripts_only:
+        refresh_transcripts([v["id"] for v in S.load_videos(S.VIDEOS_CSV)])
+        return
 
     games = S.fetch_schedule(args.season)
     print(f"Schedule: {len(games)} games in the {args.season - 1}-{str(args.season)[2:]} season.")
