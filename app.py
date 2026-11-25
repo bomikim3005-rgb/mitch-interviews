@@ -79,7 +79,8 @@ try:
         g["location"] = S.describe_location(g, venues, arenas)
 except Exception as e:  # network or page change: fall back to the last saved copy
     if not S.INTERVIEWS_CSV.exists():
-        st.error(f"Couldn't load the schedule ({type(e).__name__}). Run `python update.py`.")
+        st.error(f"Couldn't load the schedule right now ({type(e).__name__}). "
+                 "Please try again in a few minutes.")
         st.stop()
     st.warning(f"Couldn't reach Basketball-Reference ({type(e).__name__}); showing "
                "results as of the last update.")
@@ -124,7 +125,7 @@ with left:
         + (f" ({tbd} still to be scheduled after NBA Cup group play)" if tbd else "") + ". "
         f"Preseason: {(pre['outcome'] == 'W').sum()}–{(pre['outcome'] == 'L').sum()}. "
         f"Results update within {REFRESH_SECONDS // 60} minutes of Basketball-Reference "
-        "posting them; videos update when update.py runs.")
+        "posting them; new press-conference videos are added twice a day.")
 with right:
     st.subheader("What he says after wins and losses")
     key = (tuple((r["post"]["id"], r["outcome"]) for r in df.to_dict("records")
@@ -132,7 +133,8 @@ with right:
            len(list(S.TRANSCRIPTS_DIR.glob("*.txt"))) if S.TRANSCRIPTS_DIR.exists() else 0)
     png, info = word_cloud(key)
     if png is None:
-        st.info("The word cloud appears once update.py has fetched the post-game transcripts.")
+        st.info("Word cloud coming soon: collecting transcripts of his post-game press "
+                "conferences. It appears once there's at least one win and one loss to compare.")
     else:
         st.image(png, width="stretch")
         st.markdown(
