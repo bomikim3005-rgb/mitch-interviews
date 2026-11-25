@@ -46,7 +46,7 @@ Run `python update.py` after each game, or daily, to pick up new videos.
 - **App:** deploy on Streamlit Community Cloud from this repository, with main file `app.py` and Python 3.12. It needs no secrets.
 - **Data:** [`.github/workflows/update.yml`](.github/workflows/update.yml) runs `update.py` twice a day (11:17 pm and 6:17 am Pacific) and commits any changed data files. Streamlit Cloud then redeploys with them. Results and standings don't depend on it, because the app reads them live.
 - **New videos:** the scheduled run finds them through the channel's RSS feed (the latest 15 videos), which works from GitHub's servers. `python update.py --full-scan` lists the whole channel with yt-dlp instead.
-- **Transcripts:** YouTube may refuse caption downloads from GitHub's servers. If the word cloud stops growing, run `python update.py` on your Mac and push.
+- **Transcripts aren't fetched by the scheduled run.** YouTube's bot check blocks caption downloads from GitHub's servers. Run `python update.py` on your Mac from time to time, then commit and push `transcripts/`. It stops at the first refusal and picks up where it left off next time.
 
 ## Limitations
 

@@ -3,9 +3,8 @@
 #
 # - New press-conference videos come from the channel's RSS feed, which lists the
 #   latest 15 videos; running twice a day keeps well within that.
-# - Transcripts for the word cloud: YouTube may refuse caption downloads from GitHub's
-#   servers. update.py stops at the first refusal and tries again next run, so this
-#   never fails the job; any missing ones can also be fetched from a Mac and pushed.
+# - Transcripts for the word cloud are NOT fetched here: YouTube asks GitHub's servers
+#   to "sign in to confirm you're not a bot". They're fetched from a Mac instead.
 #
 # No secrets needed: everything it reads is public.
 name: update
@@ -42,7 +41,9 @@ jobs:
         run: pip install -r requirements-pipeline.txt
 
       - name: Update data
-        run: python update.py
+        # Transcripts are skipped here: YouTube's bot check blocks caption downloads
+        # from GitHub's servers. Fetch them on a Mac (python update.py) and push.
+        run: python update.py --skip-transcripts
 
       - name: Commit changes
         run: |

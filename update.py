@@ -142,7 +142,9 @@ def refresh_transcripts(video_ids: list) -> None:
                 with yt_dlp.YoutubeDL(opts) as ydl:
                     ydl.download([f"https://www.youtube.com/watch?v={vid}"])
             except yt_dlp.utils.DownloadError as e:
-                if "429" not in str(e):
+                # "Too Many Requests" or YouTube's bot check: it's refusing this network
+                # for now, so stop rather than keep asking.
+                if "429" not in str(e) and "not a bot" not in str(e):
                     print(f"  no captions for {vid}: {str(e).splitlines()[0][:100]}")
                     continue
                 refusals += 1
