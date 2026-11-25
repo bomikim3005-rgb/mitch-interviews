@@ -1,5 +1,5 @@
 #!/bin/zsh
-# Daily job on a Mac (see scripts/com.mitch-interviews.transcripts.plist): fetch any
+# Job on a Mac, run four times a day by launchd (~/Library/LaunchAgents/com.mitch-interviews.transcripts.plist): fetch any
 # missing transcripts for the word cloud and push them. GitHub Actions can't fetch
 # them (YouTube's bot check), but a home connection usually can.
 #
