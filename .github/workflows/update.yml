@@ -1,0 +1,57 @@
+# Refresh the data files the app reads, and commit them back so the deployed app
+# (Streamlit Community Cloud) picks them up.
+#
+# - New press-conference videos come from the channel's RSS feed, which lists the
+#   latest 15 videos; running twice a day keeps well within that.
+# - Transcripts for the word cloud: YouTube may refuse caption downloads from GitHub's
+#   servers. update.py stops at the first refusal and tries again next run, so this
+#   never fails the job; any missing ones can also be fetched from a Mac and pushed.
+#
+# No secrets needed: everything it reads is public.
+name: update
+
+on:
+  schedule:
+    # 07:17 and 14:17 UTC = 11:17 pm and 6:17 am Pacific (PST): after the night's
+    # post-game press conferences, and again for anything posted later.
+    # GitHub may start it a few minutes late.
+    - cron: "17 7,14 * * *"
+  workflow_dispatch:        # "Run workflow" button for manual runs
+
+concurrency:
+  group: update             # never two runs at once
+  cancel-in-progress: false
+
+permissions:
+  contents: write           # to commit the refreshed data files
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: requirements-pipeline.txt
+
+      - name: Install
+        run: pip install -r requirements-pipeline.txt
+
+      - name: Update data
+        run: python update.py
+
+      - name: Commit changes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add videos.csv interviews.csv venues.csv arenas.csv preseason.csv standings.csv transcripts
+          if git diff --cached --quiet; then
+            echo "No changes."
+          else
+            git commit -m "Update data ($(date -u +%Y-%m-%dT%H:%MZ))"
+            git push
+          fi
