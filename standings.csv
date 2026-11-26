@@ -1,31 +1,31 @@
 conference,seed,team,wins,losses,pct,gb,ps_g,pa_g
-West,1,San Antonio Spurs,15,3,.833,—,117.6,105.4
-West,2,Los Angeles Lakers,15,3,.833,—,119.4,112.7
-West,3,Minnesota Timberwolves,13,5,.722,2.0,116.4,105.8
-West,4,Houston Rockets,13,5,.722,2.0,118.1,110.2
-West,5,Memphis Grizzlies,13,5,.722,2.0,120.3,111.4
-West,6,Portland Trail Blazers,11,6,.647,3.5,116.8,110.4
+West,1,Los Angeles Lakers,15,3,.833,—,119.4,112.7
+West,2,San Antonio Spurs,15,4,.789,0.5,117.3,106.0
+West,3,Minnesota Timberwolves,14,5,.737,1.5,116.2,105.8
+West,4,Houston Rockets,14,5,.737,1.5,118.0,109.9
+West,5,Memphis Grizzlies,14,5,.737,1.5,120.1,110.7
+West,6,Portland Trail Blazers,12,6,.667,3.0,116.8,110.4
 West,7,Denver Nuggets,10,6,.625,4.0,116.0,115.5
 West,8,Dallas Mavericks,11,7,.611,4.0,112.8,111.8
-West,9,Phoenix Suns,9,7,.563,5.0,114.4,115.0
-West,10,Oklahoma City Thunder,10,8,.556,5.0,113.4,110.2
-West,11,Golden State Warriors,9,8,.529,5.5,111.2,112.1
+West,9,Golden State Warriors,10,8,.556,5.0,112.2,111.9
+West,10,Phoenix Suns,9,8,.529,5.5,113.8,115.1
+West,11,Oklahoma City Thunder,10,9,.526,5.5,113.0,110.4
 West,12,New Orleans Pelicans,5,14,.263,10.5,114.5,122.5
-West,13,Los Angeles Clippers,4,12,.250,10.0,110.7,117.5
+West,13,Los Angeles Clippers,4,13,.235,10.5,109.9,117.4
 West,14,Utah Jazz,3,16,.158,12.5,107.8,115.4
-West,15,Sacramento Kings,2,15,.118,12.5,106.8,119.4
-East,1,Philadelphia 76ers,14,4,.778,—,115.3,113.4
-East,2,Boston Celtics,12,6,.667,2.0,112.3,102.9
-East,3,Atlanta Hawks,11,6,.647,2.5,116.7,113.6
-East,4,New York Knicks,11,6,.647,2.5,108.9,103.2
-East,5,Detroit Pistons,11,6,.647,2.5,112.8,107.2
-East,6,Miami Heat,10,6,.625,3.0,120.7,119.4
-East,7,Cleveland Cavaliers,9,9,.500,5.0,118.2,116.8
-East,8,Orlando Magic,7,10,.412,6.5,107.4,112.4
-East,9,Washington Wizards,7,12,.368,7.5,110.6,116.2
-East,10,Toronto Raptors,6,11,.353,7.5,111.5,111.6
-East,11,Indiana Pacers,6,12,.333,8.0,112.4,115.7
-East,12,Chicago Bulls,5,12,.294,8.5,116.9,123.6
-East,13,Charlotte Hornets,4,12,.250,9.0,100.6,110.9
-East,14,Brooklyn Nets,3,13,.188,10.0,111.2,120.3
-East,15,Milwaukee Bucks,2,16,.111,12.0,109.7,121.1
+West,15,Sacramento Kings,2,16,.111,13.0,107.0,119.9
+East,1,Philadelphia 76ers,15,4,.789,—,115.1,112.9
+East,2,Boston Celtics,12,6,.667,2.5,112.3,102.9
+East,3,New York Knicks,12,6,.667,2.5,109.6,103.2
+East,4,Atlanta Hawks,11,6,.647,3.0,116.7,113.6
+East,5,Detroit Pistons,11,6,.647,3.0,112.8,107.2
+East,6,Miami Heat,10,7,.588,4.0,119.7,118.9
+East,7,Cleveland Cavaliers,9,10,.474,6.0,117.4,117.0
+East,8,Orlando Magic,7,10,.412,7.0,107.4,112.4
+East,9,Washington Wizards,7,12,.368,8.0,110.6,116.2
+East,10,Toronto Raptors,6,11,.353,8.0,111.5,111.6
+East,11,Chicago Bulls,6,12,.333,8.5,116.4,122.6
+East,12,Indiana Pacers,6,12,.333,8.5,112.4,115.7
+East,13,Charlotte Hornets,4,13,.235,10.0,100.9,110.6
+East,14,Brooklyn Nets,4,13,.235,10.0,110.8,118.9
+East,15,Milwaukee Bucks,2,17,.105,13.0,109.1,120.2
