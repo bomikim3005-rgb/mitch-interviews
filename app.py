@@ -343,6 +343,7 @@ st.caption("Regular-season schedule, results and standings from Basketball-Refer
 # ---- all interviews (any channel; collected by all_interviews.py)
 st.subheader("All interviews")
 ALL_INTERVIEWS_CSV = S.BASE / "all_interviews.csv"
+PAGE_SIZE = 25
 
 
 @st.cache_data
@@ -362,6 +363,9 @@ if not ALL_INTERVIEWS_CSV.exists():
     st.caption("Coming soon: collecting his interviews from YouTube.")
 else:
     every = all_interviews(mtime(ALL_INTERVIEWS_CSV))
+    # Leave out the videos the games table above already links to.
+    in_games = {v["id"] for col in ("pre", "post", "other") for v in df[col] if isinstance(v, dict)}
+    every = every[~every["id"].isin(in_games)]
     find = st.text_input("Title or account contains", placeholder="e.g. Knicks, KSAT",
                          key="all_interviews_find")
     if find.strip():
@@ -370,6 +374,21 @@ else:
                       | every["channel"].str.contains(q, case=False, regex=False)]
     uploaded = pd.to_datetime(every["uploaded"], utc=True).dt.tz_convert(S.PT)
     every = every.assign(_t=uploaded).sort_values("_t", ascending=False)
+
+    # Pages of PAGE_SIZE, with Previous / Next below the table. A new search starts
+    # again at page 1.
+    pages = max(1, -(-len(every) // PAGE_SIZE))
+    if st.session_state.get("all_interviews_query") != find:
+        st.session_state["all_interviews_query"] = find
+        st.session_state["all_interviews_page"] = 1
+    page = min(st.session_state.get("all_interviews_page", 1), pages)
+    st.session_state["all_interviews_page"] = page
+
+    def turn(step: int) -> None:
+        st.session_state["all_interviews_page"] = page + step
+
+    total = len(every)
+    every = every.iloc[(page - 1) * PAGE_SIZE: page * PAGE_SIZE]
     st.dataframe(
         pd.DataFrame({
             "Date": every["_t"].dt.strftime("%a, %b %-d, %Y"),
@@ -385,8 +404,18 @@ else:
             "Interview": st.column_config.LinkColumn(display_text="▶ Watch"),
         },
         hide_index=True, width="stretch", row_height=56,
-        height=min(640, 38 + 56 * max(len(every), 1)),
+        height=40 + 56 * max(len(every), 1),  # the whole page, no inner scrolling
     )
-    st.caption(f"{len(every):,} videos of Mitch Johnson interviewed on his own, from any "
-               "YouTube account (including re-uploads), found by YouTube search and judged "
-               "by title, so a few may be missed or misjudged. Updated a few times a day.")
+    prev_col, label_col, next_col = st.columns([1, 2, 1], vertical_alignment="center")
+    prev_col.button("‹ Previous", on_click=turn, args=(-1,), disabled=page <= 1,
+                    key="all_interviews_prev", width="stretch")
+    first = (page - 1) * PAGE_SIZE + 1 if total else 0
+    label_col.markdown(f"<div style='text-align:center'>Page {page} of {pages} · "
+                       f"{first}–{min(page * PAGE_SIZE, total)} of {total:,}</div>",
+                       unsafe_allow_html=True)
+    next_col.button("Next ›", on_click=turn, args=(1,), disabled=page >= pages,
+                    key="all_interviews_next", width="stretch")
+    st.caption(f"{total:,} more videos of Mitch Johnson interviewed on his own, beyond the "
+               "ones linked in the games table: from any YouTube account (including "
+               "re-uploads), found by YouTube search and judged by title, so a few may be "
+               "missed or misjudged. Updated a few times a day.")
