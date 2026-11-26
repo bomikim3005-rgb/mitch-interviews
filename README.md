@@ -30,6 +30,10 @@ Next to the record chart, a word cloud shows what Mitch Johnson says in his **po
 
 Text comes from YouTube's automatic English captions. `update.py` saves them to `transcripts/` once per video. YouTube rejects caption requests that come too fast, so it fetches one about every 20 seconds and stops for that run at the first refusal. Run it again later and it picks up where it left off. `python update.py --skip-transcripts` skips this step. The cloud is drawn with the [`wordcloud`](https://github.com/amueller/word_cloud) library, after removing common words and spoken filler ("um", "you know", …).
 
+## All interviews
+
+The "All interviews" table at the bottom lists every YouTube video of Mitch Johnson interviewed on his own, from any account: the Spurs' channels, local TV (KSAT 12, WOAI, KABB), national outlets and re-upload channels. [`all_interviews.py`](all_interviews.py) finds them with YouTube searches plus the press-conference channel's videos, keeps those whose title reads as him speaking alone ("Mitch Johnson on …", "Coach Mitch Johnson speaks after …"), and drops group pressers ("Wembanyama & Mitch Johnson …") and commentary about him. It reads each new video's page once for its upload time, length and channel, and saves everything to `all_interviews.csv`. Titles are the only signal, so a few videos may be missed or misjudged.
+
 ## Run it
 
 ```bash
@@ -46,7 +50,7 @@ Run `python update.py` after each game, or daily, to pick up new videos.
 - **App:** deploy on Streamlit Community Cloud from this repository, with main file `app.py` and Python 3.12. It needs no secrets.
 - **Data:** [`.github/workflows/update.yml`](.github/workflows/update.yml) runs `update.py` twice a day (11:17 pm and 6:17 am Pacific) and commits any changed data files. Streamlit Cloud then redeploys with them. Results and standings don't depend on it, because the app reads them live.
 - **New videos:** the scheduled run finds them through the channel's RSS feed (the latest 15 videos), which works from GitHub's servers. `python update.py --full-scan` lists the whole channel with yt-dlp instead.
-- **Transcripts on a Mac:** [`scripts/fetch_transcripts.sh`](scripts/fetch_transcripts.sh) runs four times a day through launchd (`~/Library/LaunchAgents/com.mitch-interviews.transcripts.plist`: 2:30, 8:30, 14:30 and 20:30, or on wake if the Mac was asleep). It pulls, fetches missing transcripts with `update.py --transcripts-only`, and commits and pushes only `transcripts/`. Its log is at `~/Library/Logs/mitch-interviews-transcripts.log`.
+- **Transcripts on a Mac:** [`scripts/fetch_transcripts.sh`](scripts/fetch_transcripts.sh) runs four times a day through launchd (`~/Library/LaunchAgents/com.mitch-interviews.transcripts.plist`: 2:30, 8:30, 14:30 and 20:30, or on wake if the Mac was asleep). It pulls, refreshes `all_interviews.csv` with `all_interviews.py`, fetches missing transcripts with `update.py --transcripts-only`, and commits and pushes only `transcripts/` and `all_interviews.csv`. If an earlier push failed (for example overnight, while the Mac is locked), the next run pushes it. Its log is at `~/Library/Logs/mitch-interviews-transcripts.log`.
 - **Transcripts aren't fetched by the scheduled run.** YouTube's bot check blocks caption downloads from GitHub's servers. Run `python update.py` on your Mac from time to time, then commit and push `transcripts/`. It stops at the first refusal and picks up where it left off next time.
 
 ## Limitations

@@ -13,7 +13,7 @@ Run:
     pip install -r requirements.txt
     streamlit run app.py
 """
-from datetime import date, datetime, timezone
+from datetime import date, datetime, timedelta, timezone
 
 import altair as alt
 import pandas as pd
@@ -166,15 +166,18 @@ now = datetime.now(timezone.utc)
 
 # ---- next games
 NEXT_GAMES = 5
+GAME_LENGTH = timedelta(hours=3)  # after tip-off, a game without a result counts as in progress
 
 
 def countdown(tip: datetime) -> str:
+    if tip <= now:
+        return "Live now"
     days = (tip.astimezone(S.PT).date() - now.astimezone(S.PT).date()).days
     return {0: "Tonight", 1: "Tomorrow"}.get(days, f"In {days} days")
 
 
 upcoming = df[(df["kind"] != "No game") & (df["result"] == "") & df["tip"].notna()]
-upcoming = upcoming[upcoming["tip"].map(lambda t: t > now)].sort_values("tip").head(NEXT_GAMES)
+upcoming = upcoming[upcoming["tip"].map(lambda t: t > now - GAME_LENGTH)].sort_values("tip").head(NEXT_GAMES)
 st.subheader("Next games")
 if upcoming.empty:
     st.caption("No upcoming games scheduled.")
@@ -195,7 +198,8 @@ else:
 # ---- games table
 st.subheader("All games and interviews")
 view = df[df["kind"].isin(kinds)]
-played = view["result"].ne("") | ((view["kind"] == "No game") & (view["when"] <= now))
+# A game counts as played from tip-off, so it stays listed while waiting for its result.
+played = view["result"].ne("") | (view["when"] <= now)
 view = view[{"Played": played, "Upcoming": ~played, "All": played | ~played}[show]]
 if where != "All":
     view = view[view["location"].str.endswith(f"({where.lower()})")]
@@ -221,6 +225,13 @@ def result_label(result: str) -> str:
     outcome, us, them, ot = p
     margin = f"{us - them:+d}".replace("-", "−")  # a true minus sign for losses
     return f"{outcome} {us}–{them}{' ' + ot if ot else ''} · {margin}"
+
+
+def pending_label(kind: str, when: datetime) -> str:
+    """For a game that has tipped off but has no result yet."""
+    if kind == "No game" or when > now:
+        return ""
+    return "In progress" if now - when < GAME_LENGTH else "Result coming soon"
 
 
 def result_style(result: str) -> str:
@@ -269,7 +280,8 @@ table = pd.DataFrame({
     "Tip-off (PT)": [time_label(r) for _, r in view.iterrows()],
     "Type": view["kind"],
     "Game": [game_label(r) for _, r in view.iterrows()],
-    "Result": view["result"].map(result_label),
+    "Result": [result_label(r) or pending_label(k, w) for r, k, w
+               in zip(view["result"], view["kind"], view["when"])],
     "Pre-game": view["pre"].map(link),
     "Pre-game topic": view["pre"].map(topic),
     "Post-game": view["post"].map(link),
@@ -327,3 +339,54 @@ if standings:
             )
 st.caption("Regular-season schedule, results and standings from Basketball-Reference; "
            "preseason from Wikipedia.")
+
+# ---- all interviews (any channel; collected by all_interviews.py)
+st.subheader("All interviews")
+ALL_INTERVIEWS_CSV = S.BASE / "all_interviews.csv"
+
+
+@st.cache_data
+def all_interviews(mtime):
+    # mtime only makes the cache reload when all_interviews.py rewrites the file.
+    return pd.read_csv(ALL_INTERVIEWS_CSV, dtype=str).fillna("")
+
+
+def length_label(seconds: str) -> str:
+    if not seconds.isdigit():
+        return ""
+    m, s = divmod(int(seconds), 60)
+    return f"{m // 60}:{m % 60:02d}:{s:02d}" if m >= 60 else f"{m}:{s:02d}"
+
+
+if not ALL_INTERVIEWS_CSV.exists():
+    st.caption("Coming soon: collecting his interviews from YouTube.")
+else:
+    every = all_interviews(mtime(ALL_INTERVIEWS_CSV))
+    find = st.text_input("Title or account contains", placeholder="e.g. Knicks, KSAT",
+                         key="all_interviews_find")
+    if find.strip():
+        q = find.strip()
+        every = every[every["title"].str.contains(q, case=False, regex=False)
+                      | every["channel"].str.contains(q, case=False, regex=False)]
+    uploaded = pd.to_datetime(every["uploaded"], utc=True).dt.tz_convert(S.PT)
+    every = every.assign(_t=uploaded).sort_values("_t", ascending=False)
+    st.dataframe(
+        pd.DataFrame({
+            "Date": every["_t"].dt.strftime("%a, %b %-d, %Y"),
+            "Thumbnail": "https://i.ytimg.com/vi/" + every["id"] + "/mqdefault.jpg",
+            "Title": every["title"],
+            "Interview": "https://www.youtube.com/watch?v=" + every["id"],
+            "Account": every["channel"],
+            "Length": every["seconds"].map(length_label),
+        }),
+        column_config={
+            "Thumbnail": st.column_config.ImageColumn(width="small"),
+            "Title": st.column_config.TextColumn(width="large"),
+            "Interview": st.column_config.LinkColumn(display_text="▶ Watch"),
+        },
+        hide_index=True, width="stretch", row_height=56,
+        height=min(640, 38 + 56 * max(len(every), 1)),
+    )
+    st.caption(f"{len(every):,} videos of Mitch Johnson interviewed on his own, from any "
+               "YouTube account (including re-uploads), found by YouTube search and judged "
+               "by title, so a few may be missed or misjudged. Updated a few times a day.")
