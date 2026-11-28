@@ -1,10 +1,12 @@
 """Spurs schedule, results, standings, and matching press-conference videos to games.
 
-Schedule, results and standings come from Basketball-Reference (one page each).
+Schedule, results and standings come from Basketball-Reference (one page each). Results
+Basketball-Reference hasn't posted yet come from ESPN's scoreboard.
 Used by update.py (daily video refresh) and app.py (live results and standings).
 """
 import csv
 import html
+import json
 import re
 import urllib.parse
 import urllib.request
@@ -26,6 +28,10 @@ SCHEDULE_URL = "https://www.basketball-reference.com/teams/SAS/{season}_games.ht
 STANDINGS_URL = "https://www.basketball-reference.com/leagues/NBA_{season}_standings.html"
 TEAM_URL = "https://www.basketball-reference.com/teams/{code}/{season}.html"
 BOX_SCORE_URL = "https://www.basketball-reference.com{path}"
+# ESPN's public scoreboard has final scores minutes after a game ends; Basketball-Reference
+# can take hours. Used only for games Basketball-Reference has no result for yet.
+ESPN_SCOREBOARD_URL = ("https://site.api.espn.com/apis/site/v2/sports/basketball/nba/"
+                       "scoreboard?dates={day}")
 WIKI_URL = "https://en.wikipedia.org/api/rest_v1/page/html/{title}"
 REGULAR_SEASON_GAMES = 82
 USER_AGENT = "Mozilla/5.0 (mitch-interviews)"
@@ -114,7 +120,44 @@ def fetch_schedule(season: int) -> list:
                       "nba_cup": "NBA Cup" in c.get("game_remarks", ""),
                       "outcome": c.get("game_result", ""), "result": result,
                       "box_score": box.group(1) if box else ""})
+    fill_recent_results(games)
     return games
+
+
+def espn_result(tip: datetime) -> tuple:
+    """(outcome, result) of the Spurs game tipping off at `tip`, from ESPN's scoreboard,
+    or ("", "") if it isn't final there. Same format as Basketball-Reference's results."""
+    day = tip.astimezone(ET).strftime("%Y%m%d")
+    data = json.loads(get_page(ESPN_SCOREBOARD_URL.format(day=day)))
+    for event in data.get("events", []):
+        comp = event["competitions"][0]
+        teams = {t["team"].get("displayName"): t for t in comp["competitors"]}
+        if SPURS not in teams or len(teams) != 2:
+            continue
+        status = event.get("status", {})
+        if not status.get("type", {}).get("completed"):
+            return "", ""
+        us = int(teams.pop(SPURS)["score"])
+        them = int(next(iter(teams.values()))["score"])
+        extra = int(status.get("period") or 4) - 4
+        ot = "" if extra <= 0 else f" ({'' if extra == 1 else extra}OT)"
+        outcome = "W" if us > them else "L"
+        return outcome, f"{outcome} {us}–{them}{ot}"
+    return "", ""
+
+
+def fill_recent_results(games: list) -> None:
+    """Fill in results from ESPN for games from the last 3 days that have tipped off but
+    have no result on Basketball-Reference yet. Never fails: a game it can't fill keeps
+    waiting for Basketball-Reference."""
+    now = datetime.now(timezone.utc)
+    for g in games:
+        if g["result"] or not (now - timedelta(days=3) < g["tip"] < now):
+            continue
+        try:
+            g["outcome"], g["result"] = espn_result(g["tip"])
+        except Exception:
+            pass
 
 
 def fetch_team_arena(team: str, season: int) -> str:

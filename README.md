@@ -4,7 +4,7 @@ A Streamlit app that lists San Antonio Spurs head coach Mitch Johnson's pre- and
 
 ## How it works
 
-**Results and standings are read live.** The app reads the Spurs schedule, results and conference standings from Basketball-Reference when it loads, refreshing every 10 minutes. A result shows up shortly after Basketball-Reference posts it. If the site can't be reached, the app falls back to `interviews.csv` from the last `update.py` run.
+**Results and standings are read live.** The app reads the Spurs schedule, results and conference standings from Basketball-Reference when it loads, refreshing every 10 minutes. Basketball-Reference can take hours to post a result, so for a game that has tipped off without one, the app takes the final score from ESPN's public scoreboard instead. It shows up within about 10 minutes of the final buzzer. If the site can't be reached, the app falls back to `interviews.csv` from the last `update.py` run.
 
 **Videos come from `update.py`,** which refreshes `videos.csv` and writes `interviews.csv`. The shared logic is in `spurs.py`:
 
