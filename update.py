@@ -86,13 +86,23 @@ def feed_videos() -> list:
 
 def refresh_videos(full_scan: bool) -> list:
     """Add new Mitch Johnson videos to videos.csv. Normally from the RSS feed (latest 15
-    videos, so run at least every few days); with full_scan, from the whole channel."""
+    videos, so run at least every few days); with full_scan, or if the feed fails, from
+    the whole channel."""
     cache = {}
     if S.VIDEOS_CSV.exists():
         cache = {r["id"]: r for r in csv.DictReader(open(S.VIDEOS_CSV, newline=""))}
     # Any title with his name, including joint interviews ("Dylan Harper and Mitch Johnson ...").
     is_mitch = lambda title: SPEAKER.lower() in (title or "").lower()
-    if full_scan or not cache:
+    feed = None
+    if not (full_scan or not cache):
+        try:
+            feed = feed_videos()
+        except (OSError, ET.ParseError) as e:  # URLError/HTTPError are OSErrors
+            # The feed sometimes returns 503 for hours. Fall back to listing the channel
+            # with yt-dlp, which YouTube may challenge from cloud servers.
+            print(f"RSS feed failed ({e}); listing the channel with yt-dlp instead.",
+                  file=sys.stderr)
+    if feed is None:
         mitch = [(vid, title) for vid, title in list_videos() if is_mitch(title)]
         new = [vid for vid, _ in mitch if vid not in cache]
         titles = dict(mitch)
@@ -100,7 +110,7 @@ def refresh_videos(full_scan: bool) -> list:
             cache[vid] = {"id": vid, "title": titles[vid], "uploaded_utc": when.isoformat()}
         print(f"Channel (full scan): {len(mitch)} {SPEAKER} videos, {len(new)} new.")
     else:
-        latest = [(vid, title, when) for vid, title, when in feed_videos() if is_mitch(title)]
+        latest = [(vid, title, when) for vid, title, when in feed if is_mitch(title)]
         new = [(vid, title, when) for vid, title, when in latest if vid not in cache]
         for vid, title, when in new:
             cache[vid] = {"id": vid, "title": title,
