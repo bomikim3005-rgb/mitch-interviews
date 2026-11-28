@@ -5,8 +5,9 @@ head coach Mitch Johnson's pre- and post-game press conferences on the
 @SanAntonioSpursPressConference YouTube channel, plus his interviews that aren't tied
 to a game, a won/lost/not-played chart and the conference standings.
 
-Regular-season schedule, results and standings are read live from Basketball-Reference
-(refreshed every 10 minutes). Videos (videos.csv), the preseason (preseason.csv) and
+Regular-season schedule and results are read live from Basketball-Reference (with ESPN
+for results it hasn't posted yet), and standings from ESPN (Basketball-Reference as a
+fallback), refreshed every 10 minutes. Videos (videos.csv), the preseason (preseason.csv) and
 arenas (venues.csv, arenas.csv) come from update.py.
 
 Run:
@@ -337,8 +338,8 @@ if standings:
                               axis=1),
                 hide_index=True, width="stretch", height=38 + 35 * len(t),
             )
-st.caption("Regular-season schedule, results and standings from Basketball-Reference; "
-           "preseason from Wikipedia.")
+st.caption("Regular-season schedule and results from Basketball-Reference, with ESPN "
+           "for the latest results; standings from ESPN; preseason from Wikipedia.")
 
 # ---- all interviews (any channel; collected by all_interviews.py)
 st.subheader("All interviews")

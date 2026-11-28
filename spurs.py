@@ -32,6 +32,8 @@ BOX_SCORE_URL = "https://www.basketball-reference.com{path}"
 # can take hours. Used only for games Basketball-Reference has no result for yet.
 ESPN_SCOREBOARD_URL = ("https://site.api.espn.com/apis/site/v2/sports/basketball/nba/"
                        "scoreboard?dates={day}")
+ESPN_STANDINGS_URL = ("https://site.api.espn.com/apis/v2/sports/basketball/nba/"
+                      "standings?season={season}")
 WIKI_URL = "https://en.wikipedia.org/api/rest_v1/page/html/{title}"
 REGULAR_SEASON_GAMES = 82
 USER_AGENT = "Mozilla/5.0 (mitch-interviews)"
@@ -198,7 +200,41 @@ def describe_location(game: dict, venues: dict, arenas: dict) -> str:
 
 
 def fetch_standings(season: int) -> dict:
-    """{"West": [...], "East": [...]}: each team's seed, W, L, W/L%, GB, PS/G, PA/G."""
+    """{"West": [...], "East": [...]}: each team's seed, W, L, W/L%, GB, PS/G, PA/G.
+    From ESPN, which updates minutes after each game; Basketball-Reference if that fails."""
+    try:
+        return fetch_espn_standings(season)
+    except Exception:
+        return fetch_bref_standings(season)
+
+
+def fetch_espn_standings(season: int) -> dict:
+    """Standings from ESPN, in the same shape and number formats as Basketball-Reference's."""
+    data = json.loads(get_page(ESPN_STANDINGS_URL.format(season=season)))
+    out = {}
+    for child in data["children"]:
+        conf = "West" if "West" in child["name"] else "East"
+        teams = []
+        for e in child["standings"]["entries"]:
+            st = {x["name"]: x for x in e["stats"]}
+            num = lambda k: float(st[k]["value"])
+            gb = num("gamesBehind")
+            name = e["team"]["displayName"]
+            teams.append({"seed": int(num("playoffSeed")),
+                          "team": "Los Angeles Clippers" if name == "LA Clippers" else name,
+                          "wins": int(num("wins")), "losses": int(num("losses")),
+                          "pct": st["winPercent"]["displayValue"],
+                          "gb": "—" if gb == 0 else f"{gb:.1f}",
+                          "ps_g": f"{num('avgPointsFor'):.1f}",
+                          "pa_g": f"{num('avgPointsAgainst'):.1f}"})
+        out[conf] = sorted(teams, key=lambda t: t["seed"])
+    if sorted(out) != ["East", "West"] or any(len(t) != 15 for t in out.values()):
+        raise ValueError("unexpected ESPN standings")
+    return out
+
+
+def fetch_bref_standings(season: int) -> dict:
+    """Standings from Basketball-Reference."""
     page = get_page(STANDINGS_URL.format(season=season))
     out = {}
     for conf, table_id in (("West", "confs_standings_W"), ("East", "confs_standings_E")):

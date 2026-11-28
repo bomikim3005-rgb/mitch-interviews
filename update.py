@@ -12,7 +12,7 @@
   ones are fetched, a few seconds apart to stay within the site's rate limit.
 - interviews.csv: one row per game with its result and pre/post-game videos (see
   spurs.match_videos). The app builds the same table live; it uses this file only
-  if Basketball-Reference can't be reached.
+  if ESPN and Basketball-Reference can't be reached.
 
 Run:
     python update.py                # current season
