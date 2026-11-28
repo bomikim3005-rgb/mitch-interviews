@@ -173,10 +173,14 @@ def fetch_venue(box_score_path: str) -> str:
     """Where a played game was held, e.g. "Moody Center, Austin" (from its box score)."""
     page = get_page(BOX_SCORE_URL.format(path=box_score_path))
     meta = re.search(r'<div class="scorebox_meta">(.*?)</div>\s*</div>', page, re.S)
-    divs = re.findall(r"<div>(.*?)</div>", meta.group(1) if meta else "", re.S)
-    if len(divs) < 2:
+    divs = [html.unescape(re.sub(r"<[^>]+>", "", d)).strip()
+            for d in re.findall(r"<div>(.*?)</div>", meta.group(1) if meta else "", re.S)]
+    # The venue follows the tip-off time ("10:00 PM, November 25, 2026"). NBA Cup games
+    # have an extra "NBA Cup" line first, so it isn't always the second line.
+    when = next((i for i, d in enumerate(divs) if re.match(r"\d{1,2}:\d{2} [AP]M, ", d)), None)
+    if when is None or when + 1 >= len(divs):
         return ""
-    venue = html.unescape(re.sub(r"<[^>]+>", "", divs[1])).strip()
+    venue = divs[when + 1]
     return re.sub(r",\s*[A-Za-z .]+$", "", venue) if venue.count(",") >= 2 else venue  # drop state
 
 
